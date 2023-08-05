@@ -16,7 +16,7 @@ module.exports.getUserById = (req, res) => {
         }
         res.send(user);
       })
-      .catch(() => res.status(404).send({ message: 'Нет пользователя по указанному _id' }));
+      .catch(() => res.status(500).send({ message: 'Нет пользователя по указанному _id' }));
   } else {
     res.status(400).send({ message: 'Некорректный _id' });
   }
@@ -48,7 +48,7 @@ module.exports.editUserData = (req, res) => {
         }
       });
   } else {
-    res.status(500).send({ message: 'На сервере произошла ошибка' });
+    res.status(400).send({ message: 'На сервере произошла ошибка' });
   }
 };
 
