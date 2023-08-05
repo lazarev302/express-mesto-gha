@@ -35,7 +35,7 @@ module.exports.deleteCard = (req, res) => {
         }
         res.send({ message: 'Карточка удалена' });
       })
-      .catch(() => res.status(404).send({ message: 'Карточка с указанным _id не найдена' }));
+      .catch(() => res.status(500).send({ message: 'Карточка с указанным _id не найдена' }));
   } else {
     res.status(400).send({ message: 'Некорректный _id карточки' });
   }
@@ -52,7 +52,7 @@ module.exports.likeCard = (req, res) => {
         }
         res.send(card);
       })
-      .catch(() => res.status(404).send({ message: 'Карточка с указанным _id не найдена' }));
+      .catch(() => res.status(500).send({ message: 'Карточка с указанным _id не найдена' }));
   } else {
     res.status(400).send({ message: 'Некорректный _id карточки' });
   }
@@ -69,7 +69,7 @@ module.exports.dislikeCard = (req, res) => {
         }
         res.send(card);
       })
-      .catch(() => res.status(404).send({ message: 'Карточка с указанным _id не найдена' }));
+      .catch(() => res.status(500).send({ message: 'Карточка с указанным _id не найдена' }));
   } else {
     res.status(400).send({ message: 'Некорректный _id карточки' });
   }
