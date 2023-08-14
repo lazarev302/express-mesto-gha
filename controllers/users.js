@@ -1,4 +1,6 @@
+const { request } = require('express');
 const User = require('../models/user');
+const BadReqestError = request()
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -7,63 +9,62 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  if (req.params.userId.length === 24) {
     User.findById(req.params.userId)
+      .orFail()
       .then((user) => {
-        if (!user) {
-          res.status(404).send({ message: 'Нет пользователя по указанному _id' });
-          return;
-        }
-        res.send(user);
+        res.status(httpConstants.HTTP_STATUS_CREATED).send(user);
       })
-      .catch(() => res.status(500).send({ message: 'Нет пользователя по указанному _id' }));
-  } else {
-    res.status(400).send({ message: 'Некорректный _id' });
-  }
-};
+      .catch((err) => {
+        if(err instanceof mongoose.Error.CastError) {
+          next(new BadReqestError(`Некорректный _id: ${req.params.userId}`));
+        } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+          next(new NotFoundError(`Пользователь по указанному _id: ${req.params.userId} не найден`));
+        } else {
+          next(err);
+        }
+      });
+    };
 
 module.exports.addUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(httpConstants.HTTP_STATUS_CREATED).send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+      if (err instanceof mongoose.Error.ValidationError) {
+        res.status(httpConstants.HTTP_STATUS_BAD_REQUEST).send({ message: err.message });
       } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
+        res.status(httpConstants.HTTP_STATUS_INTERMAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
 
 module.exports.editUserData = (req, res) => {
   const { name, about } = req.body;
-  if (req.user._id) {
-    User.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: true })
-      .then((user) => res.send(user))
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(400).send({ message: err.message });
-        } else {
-          res.status(500).send({ message: 'Нет пользователя по указанному _id' });
-        }
-      });
-  } else {
-    res.status(400).send({ message: 'На сервере произошла ошибка' });
-  }
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: true })
+    .orFail()
+    .then((user) => res.status(httpConstants.HTTP_STATUS__OK).send(user))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        res.status(httpConstants.HTTP_STATUS_BAD_REQUEST).send({ message: err.message });
+      } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+        res.status(httpConstants.HTTP_STATUS_NOT_FOUND).send({ message: 'Нет пользователя по указанному _id' });
+      } else {
+        res.status(httpConstants.HTTP_STATUS_INTERMAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
+      }
+    });
 };
 
 module.exports.editUserAvatar = (req, res) => {
-  if (req.user._id) {
     User.findByIdAndUpdate(req.user._id, { avatar: req.body.avatar }, { new: 'true', runValidators: true })
-      .then((user) => res.send(user))
+      .orFail()
+      .then((user) => res.status(httpConstants.HTTP_STATUS__OK).send(user))
       .catch((err) => {
-        if (err.name === 'ValidationError') {
-          res.status(400).send({ message: err.message });
+        if (err instanceof mongoose.Error.ValidationError) {
+          res.status(httpConstants.HTTP_STATUS_BAD_REQUEST).send({ message: err.message });
+        } else if (err instanceof mongoose.Error.DocumentNotFoundError) {
+          res.status(httpConstants.HTTP_STATUS_NOT_FOUND).send({ message: 'Нет пользователя по указанному _id' });
         } else {
-          res.status(500).send({ message: 'Нет пользователя по указанному _id' });
+          res.status(httpConstants.HTTP_STATUS_INTERMAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
         }
       });
-  } else {
-    res.status(500).send({ message: 'На сервере произошла ошибка' });
-  }
 };

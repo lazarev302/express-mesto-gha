@@ -8,7 +8,6 @@
     "dev": "nodemon app.js",
     "lint": "npx eslint .",
     "lintfix": "npx eslint . --fix"
-
   },
   "keywords": [],
   "author": "Lazarev",
@@ -20,8 +19,15 @@
     "nodemon": "^3.0.1"
   },
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
+    "celebrate": "^15.0.1",
+    "eslint-plugin-require": "^0.0.1",
     "express": "^4.18.2",
-    "mongoose": "^7.4.1"
+    "express-rate-limit": "^6.9.0",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.1",
+    "mongoose": "^7.4.1",
+    "validator": "^13.11.0"
   }
 }
