@@ -1,31 +1,56 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 
-const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/testdb' } = process.env;
+const limiter = require('./middlewares/rateLimiter');
+
+const routeSignup = require('./routes/signup');
+const routeSignin = require('./routes/signin');
+
+const auth = require('./middlewares/auth');
+
+const routeUsers = require('./routes/users');
+const routeCards = require('./routes/cards');
+
+const CustomNotFoundCode = require('./errors/CustomNotFoundCode');
+const errorHandler = require('./middlewares/errorHandler');
+
+const URL = 'mongodb://127.0.0.1:27017/mestodb';
+const { PORT = 3000 } = process.env;
+
+mongoose.set('strictQuery', true);
+
+mongoose
+  .connect(URL)
+  .then(() => {
+    console.log('БД подключена');
+  })
+  .catch(() => {
+    console.log('Не удалось подключиться к БД');
+  });
 
 const app = express();
+
+app.use(helmet());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-mongoose.connect(DB_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+app.use(limiter);
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64cbe8b5e0a3aa69ed3c3368',
-  };
-  next();
-});
+app.use('/', routeSignup);
+app.use('/', routeSignin);
 
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
+app.use(auth);
 
-app.use('*', (req, res) => {
-  res.statusCode(404).send({ message: 'Страница не найдена' });
-});
+app.use('/users', routeUsers);
+app.use('/cards', routeCards);
+
+app.use((req, res,
+  next) => next(new CustomNotFoundCode('Запрашиваемый ресурс не найден.')));
+app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT);
