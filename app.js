@@ -48,8 +48,11 @@ app.use(auth);
 app.use('/users', routeUsers);
 app.use('/cards', routeCards);
 
-app.use((req, res,
-  next) => next(new CustomNotFoundCode('Запрашиваемый ресурс не найден.')));
+app.use((
+  req,
+  res,
+  next,
+) => next(new CustomNotFoundCode('Запрашиваемый ресурс не найден.')));
 app.use(errors());
 app.use(errorHandler);
 

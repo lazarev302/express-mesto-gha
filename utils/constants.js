@@ -1,4 +1,3 @@
-
 const CONFIDENTIAL_KEY = 'c8c54eb9bb47fdb5a9e8002f9de697fc899ca5777238994607e5544bb43bd8ce';
 
 const emailPattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
